@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Date</title>
+    <style>
+      #screen {
+        width: 300px;
+        height: 200px;
+        text-align: center;
+        user-select: none;
+      }
+      #screen.waiting {
+        background-color: #08f;
+      }
+      #screen.ready {
+        background-color: red;
+        color: white;
+      }
+      #screen.now {
+        background-color: #090;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="screen" class="waiting">클릭해서 시작하세요</div>
+    <div id="result"></div>
+    <script>
+      const $screen = document.querySelector('#screen');
+      const $result = document.querySelector('#result');
+
+      // 기록한다, 저장한다 --> 변수로 두기
+      // scope 관련해서 변수위치 잘 기억해두기 !!
+      let startTime;
+      let endTime;
+      const records = [];
+      let timeoutId;
+
+      //   JS에서 class 가져올때는 : class(X) className으로(O)
+      // 태그.classList.contains('클래스');
+      $screen.addEventListener('click', (event) => {
+        if (event.target.classList.contains('waiting')) {
+          // 파랑
+          $screen.classList.remove('waiting');
+          $screen.classList.add('ready');
+          $screen.textContent = '초록색이 되면 클릭하세요.';
+          timeoutId = setTimeout(function () {
+            startTime = new Date();
+            $screen.classList.remove('ready');
+            $screen.classList.add('now');
+            $screen.textContent = '클릭하세요 !';
+            // 첫 시간 재기
+          }, Math.floor(Math.random() * 1000) + 2000); // 2초 ~ 3초 사이 (2000 ~ 3000 사이 수)
+          //   0 <= X < 1
+          //  2000 <= X * 1000 + 2000 < 3000
+          // 2000 ~ 2999 사이 자연수
+        } else if (event.target.classList.contains('ready')) {
+          // 빨강
+          clearTimeout(timeoutId);
+          $screen.classList.remove('ready');
+          $screen.classList.add('waiting');
+          $screen.textContent = '너무 성급하시군요!';
+        } else if (event.target.classList.contains('now')) {
+          // 초록
+          // 끝 시간 재기
+          endTime = new Date();
+          const current = endTime - startTime;
+          records.push(current);
+          const average = records.reduce((a, c) => a + c) / records.length;
+          // 순위
+          $result.textContent = `현재 ${current}ms, 평균: ${average}ms`;
+          // prep(p 이전) , current(c 현재)
+          const topFive = records.sort((p, c) => p - c).slice(0, 5); // 0 1 2 3 4 (5포함 안됨!)
+          topFive.forEach((top, index) => {
+            $result.append(document.createElement('br'), `${index + 1}위: ${top}ms`);
+          });
+          startTime = null;
+          endTime = null;
+
+          $screen.classList.remove('now');
+          $screen.classList.add('waiting');
+          $screen.textContent = '클릭해서 시작하세요';
+
+          // 시간 차이 저장하기
+        }
+      });
+      //  태그.classList.contains('클래스');
+    </script>
+  </body>
+</html>

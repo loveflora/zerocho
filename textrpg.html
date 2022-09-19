@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>textRPG</title>
+  </head>
+
+  <body>
+    <form id="start-screen">
+      <input id="name-input" placeholder="주인공의 이름을 입력하세요!" />
+      <!-- <input id = "battle-input" type="number" /> 했다면, 숫자만 입력가능 (문자 입력안됨)-->
+      <button id="start">시작</button>
+    </form>
+    <div id="screen">
+      <!-- 주인공 스펙 -->
+      <div id="hero-stat">
+        <span id="hero-name"></span>
+        <span id="hero-level"></span>
+        <span id="hero-hp"></span>
+        <span id="hero-xp"></span>
+        <span id="hero-att"></span>
+      </div>
+      <!-- 일반 메뉴 -->
+      <form id="game-menu" style="display: none">
+        <div id="menu-1">1. 모험</div>
+        <div id="menu-2">2. 휴식</div>
+        <div id="menu-3">3. 종료</div>
+        <input id="menu-input" />
+        <button id="menu-button">입력</button>
+      </form>
+      <!-- 전투 메뉴 -->
+      <form id="battle-menu" style="display: none">
+        <div id="battle-1">1. 공격</div>
+        <div id="battle-2">2. 회복</div>
+        <div id="battle-3">3. 도망</div>
+        <input id="battle-input" />
+        <button id="battle-button">입력</button>
+      </form>
+      <div id="message"></div>
+      <!-- 몬스터 스펙 -->
+      <div id="monster-stat">
+        <span id="monster-name"></span>
+        <span id="monster-hp"></span>
+        <span id="monster-att"></span>
+      </div>
+    </div>
+
+    <script>
+      // 변수명 잘 짓기 !!!
+      const $startScreen = document.querySelector("#start-screen");
+      const $gameMenu = document.querySelector("#game-menu");
+      const $battlMenu = document.querySelector("#battle-menu");
+      const $heroName = document.querySelector("#hero-name");
+      const $heroLevel = document.querySelector("#hero-level");
+      const $heroHp = document.querySelector("#hero-hp");
+      const $heroXp = document.querySelector("#hero-xp");
+      const $heroAtt = document.querySelector("#hero-att");
+      const $monsterName = document.querySelector("#monster-name");
+      const $monsterHp = document.querySelector("#monster-hp");
+      const $monsterAtt = document.querySelector("#monster-att");
+      const $message = document.querySelector("#message");
+
+      // 초기 스텟 --> 객체로 표현
+      // 추후 hero와 연관된 다른 변수가 생기면,
+      // InitialHero 와 같이 좀 더 구체적으로 이름 짓기
+      const hero = {
+        name: "",
+        lev: 1,
+        maxHp: 100,
+        hp: 100,
+        xp: 0,
+        att: 10,
+        attack(monster) {
+          // this는 hero 가리킴
+          // this는 화살표 함수에서 window가 됨
+          monster.hp -= this.att;
+          this.hp -= monster.att;
+        },
+        heal(monster) {
+          this.hp += 20;
+          this.hp -= monster.att;
+        },
+      };
+
+      let monster = null;
+      // 아직 몬스터 생성이 안됨
+      // 밑에 몬스터 리스트 중 하나를 monster 변수에 랜덤으로 배정할 예정
+      const monsterList = [
+        { name: "슬라임", hp: 25, att: 10, xp: 10 },
+        { name: "스켈레톤", hp: 50, att: 15, xp: 20 },
+        { name: "마왕", hp: 150, att: 35, xp: 50 },
+      ];
+
+      $startScreen.addEventListener("submit", (event) => {
+        event.preventDefault();
+        // event.preventDefault(); ===> 기본 동작 방지하기
+        const name = event.target["name-input"].value;
+        // 이름 사이에 - 있으면, .이름 (dot notation) 사용 못함 ==> [ ] 대괄호 사용해야 함
+
+        $startScreen.style.display = "none"; // 시작화면 없애고
+        $gameMenu.style.display = "block"; // 일반메뉴 보이고
+        $heroName.textContent = name; // 영웅 이름 보임
+        // const name 이니까, 함수 끝나면 const name 에 더이상 접근 X
+        // (함수 끝나도 name 변수에 접근하고 싶으면, 외부에 let name으로 변경)
+        $heroLevel.textContent = `${hero.lev}Lev`;
+        $heroHp.textContent = `HP: ${hero.hp}/${hero.maxHp}`;
+        $heroXp.textContent = `XP: ${hero.xp}/${15 * hero.lev}`;
+        // 경험치 lev * 15 ==> level up
+        // 1 lv ==> 15 경험치 ==> level up
+        // 2 lv ==> 30 경험치 ==> level up
+        $heroAtt.textContent = `ATT: ${hero.att}`;
+        hero.name = name;
+
+        $gameMenu.addEventListener("submit", (event) => {
+          event.preventDefault();
+          const input = event.target["menu-input"].value;
+          // event.target : form
+          // form.id.value
+          // input === '1' : 1번
+          if (input === "1") {
+            // 모험
+            // input 의 value 는 항상 text !!!
+            // input === 1 하면 : false 나옴 (input의 type은 숫자가 아니기 때문에)
+            // html에서 --- <input id = "battle-input" type="number" /> 해도 false 일걸...?
+            // .valueAsNumber 해줘야 숫자형으로 변환
+            $gameMenu.style.display = "none"; // 휴식
+            $battlMenu.style.display = "block"; // 종료
+            monster = JSON.parse(
+              // 깊은 복사
+              JSON.stringify(
+                monsterList[Math.floor(Math.random() * monsterList.length)],
+                // 랜덤으로 하나 뽑음 (lotto에서 했던 방식)
+              ),
+            );
+            monster.maxHp = monster.hp;
+            $monsterName.textContent = monster.name;
+            $monsterHp.textContent = `HP: ${monster.hp}/${monster.maxHp}`;
+            $monsterAtt.textContent = `ATT: ${monster.att}`;
+
+            const monster1 = JSON.parse(JSON.stringify(monsterList[0]));
+            // 1. 깊은 복사 monster1
+            // 깊은 복사 사용한 이유
+            // : monsterList를 두고두고 써야하는데, 참조하면 계속 변경이 됨 (hp = 0으로 아예 바뀌어 버림)
+
+            const monster2 = monsterList[0];
+            // 2. 참조 monster2 : 객체 대입
+            // 참조하면) 뒤 monsterList[0] 바뀌면, 앞 monster2 도 바뀜
+            //           앞 monster2 바뀌면, 뒤 mosterList[0] 도 바뀜
+            // 복사하면) 앞뒤 뒤앞 : 바뀌지 X
+
+            const monster3 = { ...monster[0] };
+            // 3. 얕은 복사
+            // 새로운 객체 리터럴 만든 후, 복사대상 앞에 ... 붙이기
+            // monster[0] 은 객체 리터럴
+            // const arr = [...arr];
+
+            // < 깊은 복사 vs 얕은 복사 >
+            // 얕은 복사 : 겉 껍데기만 복사, 내부는 참조. (겉껍데기만 참조관계가 끊어진다)
+            // 깊은 복사 : 전부다 참조 안됨, 전부다 복사됨. (전부다 참조관계가 끊어진다)
+
+            // 1) 변경
+            monster1.name = "새 몬스터";
+            // monster 1 복사 : monster1 이름을 "새 몬스터"로 바꾸면 --> monsterList[0] 은 안바뀜
+            console.log(monsterList[0].name); // 슬라임 (유지)
+
+            monster2.name = "새 몬스터";
+            console.log(monsterList[0].name); // 새 몬스터 (바뀜)
+            // monster 2 참조관계 : monster2 이름을 "새 몬스터"로 바꾸면 --> monsterList[0] 도 바뀜
+
+            // 2) 동등 비교
+            console.log(monsterList[0] === monster1); // false, 깊은 복사
+            // monster 1 복사
+
+            console.log(monsterList[0] === monster2); // true, 참조 관계
+            // monster 2 참조
+
+            // 다음 몬스터 만날 때마다, 새로 뽑아야 함.
+            // 슬라임 체력 0 될 때까지 죽였으면, 다음 만나는 경우 체력 0이 되는게 아니라 다시 reset되어야 함
+            // 참조) 슬라임 체력 0 --> 체력 0
+            // 복사) 슬라임 체력 0 --> 체력 100
+
+            // monsterList 의 정보가 필요할 뿐,
+            // 객체 자체가 필요한 것은 아님.
+            // 그래서 복사해서 넣어야 함. (참조가 안걸림. 처음값 유지. 바뀌는 값으로 변경 안됨.)
+
+            // 객체를 변수에 대입할 때는 복사/참조 잘 구분하기 !!!
+          } else if (input === "2") {
+            // 휴식
+          } else if (input === "3") {
+            // 종료
+          }
+        });
+
+        $battlMenu.addEventListener("submit", (event) => {
+          const input = event.target["battle-input"].value;
+          if (input === "1") {
+            // 공격
+            hero.attack(monster); // hero가 monster 공격
+            monster.attack(hero); // monster가 hero 때림
+            $heroHp.textContent = `HP: ${hero.hp}/${hero.maxHp}`;
+            $monsterHp.textContent = `HP: ${monster.hp}/${monster.maxHp}`;
+            $message.textContent = `${hero.att}의 이미지를 주고, ${monster.att}의 데이지를 받았다.`;
+          } else if (input === "2") {
+            // 회복
+          } else if (input === "3") {
+            // 도망
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

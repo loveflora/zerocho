@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>숫자야구</title>
+  </head>
+
+  <body>
+    <!-- input 감싸는 form -->
+    <form id="form">
+      <input type="text" id="input" />
+      <button>확인</button>
+    </form>
+    <!-- 사용자 기록 -->
+    <div id="logs"></div>
+    <script>
+      // html 태그 선택 $
+      const $input = document.querySelector('#input');
+      const $form = document.querySelector('#form');
+      const $logs = document.querySelector('#logs');
+
+      // 변수 모음 : 1) 배열  2) 객체 리터럴 {} : 변수에 이름까지 붙일 때
+      // 여기에선 배열 사용 (단순히 값만 모은 것이기 때문)
+      const numbers = [];
+      for (let n = 0; n < 9; n += 1) {
+        numbers.push(n + 1);
+      }
+      const answer = [];
+      // 반복문 알고리즘
+      for (let n = 0; n < 4; n += 1) {
+        // 4번 반복
+        const index = Math.floor(Math.random() * numbers.length); // 0 ~ 8 정수
+        // 9 - n 대신에 numbers.length
+        answer.push(numbers[index]); // 뽑은 애는 push (맨 뒤에 요소 추가)
+        numbers.splice(index, 1); // 원래 배열에서 splice (중간 요소 제거)
+      }
+      console.log(answer);
+
+      // 시도하는 배열
+      const tries = [];
+
+      // 검사하는 코드
+      function checkInput(input) {
+        // 3146
+        if (input.length !== 4) {
+          // 길이 4가 아니면
+          return alert('4자리 숫자를 입력해주세요.');
+        }
+        // new Set() : 중복 제거해줌 (중복 없는 배열) && .legth가 아닌 .size 사용함
+        if (new Set(input).size !== 4) {
+          // size 4 아니면 --- 중복제거한거임 (4보다 작아짐)
+          // 중복된 숫자가 있으면
+          return alert('중복되지 않게 입력해주세요.');
+        }
+        if (tries.includes(input)) {
+          // includes : 배열 요소 찾기
+          // 이미 시도한 값이면
+          return alert('이미 시도한 값입니다.');
+        }
+        // 위에 절차에서 걸리면 --> alert의 return값은 undefined
+        // 위에 절차들 전부 통과하면,
+        return true;
+      }
+
+      function defeated() {
+        // ------- 텍스트를 추가하는 방법 --------
+        // 1번째 방법 : document.createTextNode
+        //            -- appendChild , 여러개 X
+        //           (이렇다보니, append 더 많이 씀)
+        const message = document.createTextNode(`패배! 정답은 ${answer.join('')}`);
+        $logs.appendChild(message);
+        // append : 추가
+        // *** $logs.appendChild(document.createTextNode(`패배! 정답은 ${answer.join('')`)); 라고 한번에 합쳐서 써도 됨.
+        // $logs.append(document.createTextNode('추가할 텍스트'));
+        // $logs.append(document.createElement('br')); 줄 바꿈 br 태그 추가
+
+        // 2번째 방법 : .textContent
+        // .textContent : 모든 글자를 text로 인식
+        // $logs.textContent = 'abc';
+        // $logs.textContent = $logs.textContent + 'def'; --> abcdef
+        // $logs.innerHTML = $logs.textContent + '<br/>def'; --> abc (밑에) def
+        // .innerHTML : 텍스트 안에 html 있으면, html 태그로 인식
+      }
+
+      let out = 0;
+      //   html 태그 중에 기본동작 있는 애들이 있음
+
+      // 비동기(addEventListener) : 나중에 실행됨 (대기 걸림) ------
+      //   form --- submit 이벤트
+      //   input --- click 이벤트
+      $form.addEventListener('submit', (event) => {
+        // url 끝에 ? 붙어짐 (form의 기본 동작 : 새로고침 ==> 변수 날라감)
+        event.preventDefault(); // 기본 동작 막기
+        const value = $input.value;
+        $input.value = '';
+        if (!checkInput(value)) {
+          return;
+        }
+        if (checkInput(value)) {
+          // 입력 값 문제 없음 (return true)
+          if (answer.join('') === value) {
+            // [3, 1, 4, 6] --> '3146'
+            // join : 배열을 문자열로 변환
+            // default : join(',') --> 어떤 것(,)을 기준으로 합칠지
+            // join() --> '3,1,4,6' (작은 따옴표 사용 안하면 , 붙음)
+            // join('') --> '3146'
+
+            // split() : 문자열을 배열로 변환 --> ["3146"]
+            // split('') --> ["3", "1", "4", "6"]
+            // split('1') : 1을 기준으로 나눔 --> ["3", "46"]
+            $logs.textContent = '홈런!';
+            return;
+          }
+          if (tries.length >= 9) {
+            defeated();
+            return;
+          }
+        }
+        // 몇 strike, 몇 ball 인지 검사
+        let strike = 0;
+        let ball = 0;
+
+        // answer : 3146 , value(사용자 입력 값) : 1234
+        for (let i = 0; i < answer.length; i++) {
+          // 순서도 그릴 시, 화살표가 이전으로 돌아가면 ? : 반복문
+          const index = value.indexOf(answer[i]);
+          if (index > -1) {
+            // 일치하는 숫자 발견
+            if (index === i) {
+              // 자릿수도 같음
+              strike += 1;
+            } else {
+              // 숫자만 같음
+              ball += 1;
+            }
+          }
+          // 에러 있음 (return undefined --> false)
+        }
+
+        if (strike === 0 && ball === 0) {
+          out++;
+          // append 쓰면 ?
+          //--> createTextNode 안해도 됨 (문자열 추가하면 됨)
+          //--> 한번에 여러 개 추가 가능
+          $logs.append(`${value} : 아웃`, document.createElement('br'));
+        } else {
+          $logs.append(`${value} : ${strike} 스트라이크 ${ball} 볼`, document.createElement('br'));
+        }
+        if (out === 3) {
+          defeated();
+          return;
+        }
+        tries.push(value); // 배열에 추가하기
+      });
+    </script>
+  </body>
+</html>

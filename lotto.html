@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>로또 추첨기</title>
+    <style>
+      .ball {
+        display: inline-block;
+        border: 1px solid black;
+        border-radius: 20px;
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        font-size: 20px;
+        text-align: center;
+        margin-right: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="result">추첨 결과는 ?</div>
+    <div id="bonus">보너스 :</div>
+    <script>
+      const candidate = Array(45)
+        .fill()
+        .map((v, i) => i + 1);
+      const shuffle = [];
+
+      // 피셔-에이츠 셔플 : while 문 사용하는게 편함 (candidate.length가 얼마일지 모르기 때문)
+      while (candidate.length > 0) {
+        // while : 몇 번 반복할지 잘 모를때 (간단한 조건)
+        // for문 : 정확히 몇 번 반복해야할지 알 때 (복잡한 조건) ---> 처음과 끝으르 알아야 (i의 값)
+        // for문 사용하기 ------
+        // for (let i = candidate.length; i > 0; i--) {   ---->  i = 45-1
+        // 무작위 index 뽑기
+        const random = Math.floor(Math.random() * candidate.length);
+        // 뽑은 값은 배열에 들어 있음
+        const spliceArray = candidate.splice(random, 1); // splice의 return 값
+        // 배열에 들어 있는 값을 꺼내어
+        const value = spliceArray[0];
+        // shuffle 배열에 넣기
+        shuffle.push(value);
+      }
+      console.log(shuffle);
+      // .slice(0, 6) : 앞에서 6개 자르고,
+      // .sort((a, b) => a - b : 정렬 (오름차순)
+      const winBalls = shuffle.slice(0, 6).sort((a, b) => a - b);
+      const bonus = shuffle[6]; // index = 6 이니까, 7번째 메서드
+      console.log(winBalls, bonus);
+
+      const $result = document.querySelector("#result");
+      const $bonus = document.querySelector("#bonus");
+
+      function colorize(number, $tag) {
+        if (number < 10) {
+          $tag.style.backgroundColor = "red";
+          $tag.style.color = "white";
+        } else if (number < 20) {
+          $tag.style.backgroundColor = "orange";
+        } else if (number < 30) {
+          $tag.style.backgroundColor = "yellow";
+        } else if (number < 40) {
+          $tag.style.backgroundColor = "blue";
+        } else {
+          $tag.style.backgroundColor = "green";
+          $tag.style.color = "white";
+        }
+      }
+
+      const showBall = (number, $target) => {
+        // div 태그 만들어서
+        const $ball = document.createElement("div");
+        // JS에서는 class(X), className(O)
+        $ball.className = "ball";
+        colorize(number, $ball);
+        // 뽑았던 숫자
+        $ball.textContent = number;
+        $target.appendChild($ball);
+      };
+
+      //  map : [0, 1, 2, 3, 4, 5] -> [1000, 2000, 3000, 4000, 5000, 6000]
+      // 1) let 사용
+      for (let i = 0; i < winBalls.length; i++) {
+        // setTimeout(동작 함수, 밀리초) : 타이머 함수
+        // 밀리초 = 1/1000초   1초 = 1,000밀리초  10초 10,000밀리초
+        // cf. 타이머 시간 정확하진 X (mathRandom처럼) --> 1번에 1가지 일만해서 (앞에 일 다 끝나야 실행됨)
+        // 비동기 (실제 코드랑 다른 시점에서 시행됨) --> i는 이미 6임
+        setTimeout(() => {
+          showBall(winBalls[i], $result);
+          // i = 6 --> winBalls[6] = undefined (index 6 자리 없어서 undefined)
+        }, (i + 1) * 1000);
+      }
+
+      // 2) var 사용
+      //   for (var i = 0; i < winBalls.length; i++) {
+      //     (function (j) {
+      //       setTimeout(() => {
+      //         console.log(winBalls[j], j);
+      //         drawBall(winBalls[j], $result);
+      //       }, (i + 1) * 1000);
+      //     })(i); // closure : 함수와 함수 외부 변수와의 관계
+      //   }
+      // *** 총정리 : 함수 scope를 가진 var과 비동기 함수 만나면 closure 문제가 발생함
+
+      //   보너스공
+      setTimeout(() => {
+        showBall(bonus, $bonus);
+      }, 7000);
+    </script>
+  </body>
+</html>

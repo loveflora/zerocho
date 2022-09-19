@@ -1,0 +1,71 @@
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>끝말잇기</title>
+    <style></style>
+  </head>
+
+  <body>
+    <!-- div : 공간 , span : text 감쌀 때 -->
+    <div><span id="order">1</span>번째 참가자</div>
+    <div>제시어: <span id="word"></span></div>
+    <input type="text" />
+    <button>입력</button>
+
+    <script>
+      // prompt : 입력 받음 -- 문자열
+      // parseint : 숫자형으로 변경
+      const number = parseInt(prompt('몇 명이 참가하나요?'), 10);
+      // 10진법 == default 값
+      if (number) {
+        // html 태그를 가져옴 --- $태그 (임의 규칙)
+        const $button = document.querySelector('button');
+        const $input = document.querySelector('input');
+        const $word = document.querySelector('#word');
+        const $order = document.querySelector('#order');
+        let word; // 제시어
+        let newWord; // 새로 입력한 단어
+
+        // 입력 버튼 누르면
+        const onClickButton = () => {
+          if ((!word || word[word.length - 1] === newWord[0]) && newWord.length === 3) {
+            // 제시어가 비어 있는가 ?
+            // 비어있다 || 마지막 단어 === 새로운 단어 첫 단어 (비어있지 않다)
+            word = newWord;
+            $word.textContent = word; // 제시어 넣어줌
+            // 현재 순서
+            const order = Number($order.textContent); // textContent : 문자형
+            if (order + 1 > number) {
+              // order === number
+              $order.textContent = 1;
+            } else {
+              $order.textContent = order + 1;
+            }
+          } else {
+            // 올바르지 않은가
+            alert('올바르지 않은 단어입니다 !');
+          }
+          $input.value = ''; // input 같은 입력 값은 value를 넣어줘야 함
+          $input.focus(); // 자동 커서 올림
+        };
+
+        const onInput = (event) => {
+          newWord = event.target.value;
+          // 글자 입력할 때마다 -- 새로 입력단어 저장
+        };
+
+        // onClickButton 정의된 후
+        // 이벤트 실행시켜야 해서
+        // 맨 밑에 존재
+
+        // 태그에 이벤트 발생
+        // 태그.addEventListener('이벤트 이름', 리스너함수);
+        $button.addEventListener('click', onClickButton);
+        // button 태그 클릭한 뒤에, onClickButton 함수 실행해라
+        $input.addEventListener('input', onInput);
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>로또리뷰</title>
+    <style>
+      .ball {
+        display: inline-block;
+        border: 1px solid black;
+        border-radius: 20px;
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        font-size: 20px;
+        text-align: center;
+        margin-right: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="result">추첨 결과는 ?</div>
+    <div id="bonus">보너스 :</div>
+
+    <script>
+      // 후보 1~45개 공
+      const candidate = Array(45)
+        .fill()
+        .map((v, i) => i + 1); // 함수식 실행한 결과를 가지고 새로운 배열을 만듦
+      const shuffle = []; // 뒤섞을 배열
+
+      // 피셔-에이츠 셔플 : while문 사용하는게 편함
+      while (candidate.length > 0) {
+        const random = Math.floor(Math.random() * candidate.length);
+        const spliceArray = candidate.splice(random, 1);
+      }
+    </script>
+  </body>
+</html>

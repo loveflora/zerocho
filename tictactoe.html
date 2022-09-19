@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tictactoe</title>
+  </head>
+
+  <style>
+    table {
+      border-collapse: collapse;
+      /* 표 분리 */
+    }
+
+    td {
+      border: 1px solid black;
+      width: 40px;
+      height: 40px;
+      text-align: center;
+    }
+  </style>
+
+  <body>
+    <!-- <table>
+    <tr>
+      tr 행 , td 열
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </table> -->
+
+    <script>
+      const { body } = document;
+      // document가 객체임
+      // 구조분해할당 : 변수명 == 객체의 속성명 같을 때 (객체, 배열 둘다 가능)
+      // const body = document.body;
+      // const createElement = document.createElement
+      let turn = "O";
+      const rows = [];
+      // table 만들고
+      // 위에 선언되어 있으므로 document.createElement라고 쓸 필요 없음
+      const $table = document.createElement("table");
+      // document 객체 안에 createElement라는 메서드가 있는거임
+      const $result = document.createElement("div");
+
+      // [
+      //   [td, td, td],
+      //   [td, td, td],
+      //   [td, td, td]
+      // ]
+
+      const checkWinner = (target) => {
+        // target : td -- cellIndex
+        // target : tr -- rowIndex
+        // tr은 td의 부모태그
+        const rowIndex = target.parentNode.rowIndex;
+        // tr의 rowIndex
+        // parentNode : 부모태그 가져옴
+        const cellIndex = target.cellIndex;
+        // td의 cellIndex
+
+        // const checkWinner = (target) => {
+        //   let rowIndex;
+        //   let cellIndex;
+        //   rows.forEach((row, ri) => {
+        //     row.forEach((cell, ci) => {
+        //       if (cell === target) {
+        //         rowIndex = ri;
+        //         cellIndex = ci;
+        //       }
+        //     });
+        //   });
+
+        // 3칸 다 채워졌나 ?
+        let hasWinner = false;
+        // 검사는 false로 시작
+
+        // 가로줄 검사
+        if (
+          rows[rowIndex][0].textContent === turn &&
+          rows[rowIndex][1].textContent === turn &&
+          rows[rowIndex][2].textContent === turn
+        ) {
+          hasWinner = true;
+        }
+
+        // 세로줄 검사
+        if (
+          rows[0][cellIndex].textContent === turn &&
+          rows[1][cellIndex].textContent === turn &&
+          rows[2][cellIndex].textContent === turn
+        ) {
+          hasWinner = true;
+        }
+
+        // 대각선 검사
+        if (
+          rows[0][0].textContent === turn &&
+          rows[1][1].textContent === turn &&
+          rows[2][2].textContent === turn
+        ) {
+          hasWinner = true;
+        }
+        if (
+          rows[0][2].textContent === turn &&
+          rows[1][1].textContent === turn &&
+          rows[2][0].textContent === turn
+        ) {
+          hasWinner = true;
+        }
+        return hasWinner;
+      };
+
+      // 승부 확인
+      const checkWinnerAndDraw = (target) => {
+        const hasWinner = checkWinner(target);
+        // if (checkWinner(event.target)) {
+
+        // 승자가 있으면
+        if (hasWinner) {
+          $result.textContent = `${turn}님이 승리!`;
+          $table.removeEventListener("click", callback);
+          // 승리했으면 클릭 못하게, 막아짐. 종료
+          return;
+        }
+        // 1번 승리했으면 더 이상 클릭 안되게
+
+        // 승자가 없으면 (무승부 검사)
+        // let draw = true;
+        // rows.forEach((row) => {
+        //   row.forEach((cell) => {
+        const draw = rows.flat().every((cell) => cell.textContent);
+        if (draw) {
+          $result.textContent = "무승부";
+          return;
+        }
+        // 턴 바꿔주기
+        turn = turn === "X" ? "O" : "X";
+      };
+      let clickable = true;
+      // 내 차례에 누를 수 있음
+
+      // 콜백함수 안에 $td 있으면 안됨 !
+      const callback = (event) => {
+        if (!clickable) {
+          // 클릭 못하면 종료
+          return;
+        }
+
+        // 칸에 글자가 있나 ? --> 있으면 return 함수 종료
+        if (event.target.textContent !== "") {
+          // 칸이 이미 채워져 있는가 ?
+          console.log("빈칸이 아닙니다.");
+          return;
+        } // 빈칸이면
+        console.log("빈칸입니다");
+        event.target.textContent = turn;
+        // event.currentTarget
+
+        // 승부 판단하기
+        checkWinnerAndDraw(event.target);
+        if (turn === "X") {
+          const emptyCells = rows.flat().filter((v) => !v.textContent);
+          // 빈칸 찾기 emptyCells
+          // 1차원 배열 만든 뒤에 --> filter : 조건에 해당하는 애들을 걸러줌
+          // v.textContent : 빈칸이 아니면
+          // !v.textContent : 빈칸이면
+
+          // 빈칸인 애들 중 random하게 고름 (index가 0 ~ 길이-1 중에서)
+          const randomCell =
+            emptyCells[Math.floor(Math.random() * emptyCells.length)];
+          // index (o ~ 길이-1)
+          clickable = false;
+          // 컴퓨터(X) 턴일때는, 클릭 못하게 !
+
+          setTimeout(() => {
+            randomCell.textContent = "X";
+            // 빈칸인 애들 중 random하게 고른 애를 X 표시
+            checkWinnerAndDraw(randomCell);
+            clickable = true;
+            // 컴퓨터 턴이 다 끝나면, 다시 누를 수 있게
+          }, 1000); // 1초
+        }
+      };
+
+      // if (!cell.textContent) {
+      // draw = false;
+      // every
+      // }
+      //   if (turn === "O") {
+      //     turn = "X";
+      //   } else if (turn === "X") {
+      //     turn = "O";
+      //   }
+      // };
+
+      for (let i = 1; i <= 3; i++) {
+        const $tr = document.createElement("tr");
+        const cells = [];
+        // 3개 추가로 더 넣어주기 [[], [], []]
+        // 배열 안에 배열 들어있음 : 2차원 배열
+
+        // tr 안에 td 넣고
+        for (let j = 0; j < 3; j++) {
+          const $td = document.createElement("td");
+          cells.push($td);
+          $tr.append($td);
+        }
+        // table 안에 tr 넣고
+        rows.push(cells);
+        $table.append($tr);
+      }
+
+      // table : 행과 열로 이루어진 표
+      // 행 & 열 : 3개씩
+      $table.addEventListener("click", callback);
+      // event 버블링 현상 : event는 table에 달았는데, 클릭은 td에서 됨
+      // event가 부모 태그 따라 올라감 (td - tr - table)
+      body.append($table);
+      // document.createElement('table');
+      body.append($result);
+    </script>
+  </body>
+</html>
